@@ -1,0 +1,42 @@
+apiVersion: batch.volcano.sh/v1alpha1
+kind: Job
+metadata:
+  name: q2-job
+spec:
+  schedulerName: volcano
+  minAvailable: 1
+  policies:
+    - event: PodEvicted
+      action: RestartJob
+  plugins:
+    ssh: []
+    env: []
+    svc: []
+  queue: q2
+  # Comment out the following section to enable volumes for job input/output.
+  #volumes:
+  #  - mountPath: "/myinput"
+  #  - mountPath: "/myoutput"
+  #    volumeClaimName: "testvolumeclaimname"
+  #    volumeClaim:
+  #      accessModes: [ "ReadWriteOnce" ]
+  #      storageClassName: "my-storage-class"
+  #      resources:
+  #        requests:
+  #          storage: 1Gi
+  tasks:
+    - replicas: 20
+      name: "default-nginx"
+      template:
+        metadata:
+          name: web
+        spec:
+          containers:
+            - image: nginx
+              imagePullPolicy: IfNotPresent
+              name: nginx
+              resources:
+                requests:
+                  cpu: "1"
+          restartPolicy: OnFailure
+
